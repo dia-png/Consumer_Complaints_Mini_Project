@@ -1,0 +1,152 @@
+---
+title: "Consumer Complaint Data"
+author: "Diana Rodriguez"
+date: "5/8/2022"
+output: 
+ flexdashboard::flex_dashboard:
+    orientation: rows
+    social: menu
+    source_code: embed
+---
+
+
+Consumer complaint data in the state of California in the year 2020
+
+
+```{r setup, include=FALSE}
+
+library(tidyverse)
+library(lubridate)
+library(janitor)
+library(readxl)
+library(writexl)
+library(viridis)
+library(dplyr)
+library(stringr)
+library(plotly)
+
+library(tigris)
+library(sf)
+library(tmap)
+library(tmaptools)
+library(htmltools)
+library(janitor)
+library(rmapshaper)
+library(here)
+library(flexdashboard)
+library(DT)
+options(tigris_class = "sf")
+```
+
+```{r include=FALSE}
+
+complaints_raw <- read_rds("data/complaints.rds")
+
+complaints <- complaints_raw %>% 
+  clean_names()
+
+```
+
+```{r include=FALSE}
+
+complaints %>% 
+  filter(state == "CA") %>% 
+  count(issue,sort = TRUE) %>% 
+  arrange(desc(issue))
+
+```
+
+## 
+
+# Consumer Complaint Data California 2020
+
+## Top Company Complaints in California
+
+> This chart displays the top three companies that customers filed complaints for in the state of California
+
+```{r, fig.width = 10, fig.height = 3}
+
+CA <- complaints %>% 
+  filter(state == "CA")
+
+CA_companies <- CA %>%
+  group_by(company, issue) %>% 
+  count(issue, sort = TRUE)
+
+Top_CA_companies <- head(CA_companies,5)
+
+Top_co <-ggplot(Top_CA_companies, aes(x = reorder(company,issue), y = n))+
+  geom_col(color = "#FD8F6B", fill = "#FD8F6B")+
+  theme(axis.text.x.left = element_text(size = .05))+
+  coord_flip()+
+  scale_y_continuous(name = "amount of complaints", labels = scales::comma) +
+  scale_x_discrete(name = "companies") +
+  labs(title = "California Company Complaints",
+  subtitle = "2020") + 
+  theme_minimal()
+
+ggplotly(Top_co)
+
+
+```
+
+
+## Most Common Categories of Complaints
+
+> This chart displays the top 5 most common issues customers filed complaints for in the state of California
+
+```{r, fig.width = 10, fig.height = 3}
+
+CA_complaints <- CA %>%
+  group_by(issue) %>% 
+  count(issue, sort = TRUE)
+
+Top_complaints <- 
+  head(CA_complaints,5)
+
+top_is <- ggplot(Top_complaints, aes(x = reorder(issue,n), y = n))+
+  geom_col(color = "#46A5E5", fill = "#46A5E5")+
+  theme(axis.text.x.left = element_text(size = 2))+
+  coord_flip()+
+  scale_y_continuous(name = "Number of Complaints ", labels = scales::comma) +
+  scale_x_discrete(name = "Kinds of Complaints") +
+  labs(title = "California Common Complaints",
+  subtitle = "2020") + 
+  theme_minimal()
+
+ggplotly(top_is)
+
+```
+
+-------------------------------------------------------------------------------
+
+## Analyzing Debt Collection Complaints x Companies
+
+> The following chart depicts the companies with the most complaints filed under "debt collection" in the state of California
+
+```{r, fig.width = 10, fig.height = 3}
+
+CA_debt <- CA %>% 
+  filter(product == "Debt collection") %>% 
+  group_by(company, issue) %>% 
+  summarise(issue) %>% 
+  count(issue, sort = TRUE)
+
+Top_CA_debt_complaints <-
+  head(CA_debt,10)
+
+Top_db <-ggplot(Top_CA_debt_complaints, aes(x = reorder(company,n), y = n))+
+  geom_col(color = "#F7B7B7", fill = "#F7B7B7")+
+  theme(axis.text.x.left = element_text(size = 5))+
+  coord_flip()+
+  scale_y_continuous(name = "Number of Complaints", labels = scales::comma) +
+  scale_x_discrete(name = "Companies") +
+  labs(title = "Companies x Debt Collection Related Complaints",
+  subtitle = "2020") + 
+  theme_minimal()
+
+
+ggplotly(Top_db)
+
+
+```
