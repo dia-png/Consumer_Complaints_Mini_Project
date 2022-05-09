@@ -9,6 +9,10 @@ output:
     source_code: embed
 ---
 
+
+Consumer complaint data in the state of California in the year 2020
+
+
 ```{r setup, include=FALSE}
 
 library(tidyverse)
@@ -58,6 +62,8 @@ complaints %>%
 
 ## Top Company Complaints in California
 
+> This chart displays the top three companies that customers filed complaints for in the state of California
+
 ```{r, fig.width = 10, fig.height = 3}
 
 CA <- complaints %>% 
@@ -84,9 +90,10 @@ ggplotly(Top_co)
 
 ```
 
-## 
 
 ## Most Common Categories of Complaints
+
+> This chart displays the top 5 most common issues customers filed complaints for in the state of California
 
 ```{r, fig.width = 10, fig.height = 3}
 
@@ -111,10 +118,11 @@ ggplotly(top_is)
 
 ```
 
-row
 -------------------------------------------------------------------------------
 
 ## Analyzing Debt Collection Complaints x Companies
+
+> The following chart depicts the companies with the most complaints filed under "debt collection" in the state of California
 
 ```{r, fig.width = 10, fig.height = 3}
 
