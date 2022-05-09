@@ -2,14 +2,14 @@
 title: "Consumer Complaint Data"
 author: "Diana Rodriguez"
 date: "5/8/2022"
-output: html_document
-flexdashboard::flex_dashboard:
+output: 
+ flexdashboard::flex_dashboard:
     orientation: rows
-    vertical_layout: scroll
+    social: menu
+    source_code: embed
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
 library(lubridate)
@@ -18,6 +18,8 @@ library(readxl)
 library(writexl)
 library(viridis)
 library(dplyr)
+library(stringr)
+library(plotly)
 
 library(tigris)
 library(sf)
@@ -32,18 +34,16 @@ library(DT)
 options(tigris_class = "sf")
 ```
 
-```{r}
+```{r include=FALSE}
 
 complaints_raw <- read_rds("data/complaints.rds")
 
 complaints <- complaints_raw %>% 
   clean_names()
 
-head(complaints)
-
 ```
 
-```{r}
+```{r include=FALSE}
 
 complaints %>% 
   filter(state == "CA") %>% 
@@ -52,9 +52,13 @@ complaints %>%
 
 ```
 
-# Top Company Complaints in California
+## 
 
-```{r}
+# Consumer Complaint Data California 2020
+
+## Top Company Complaints in California
+
+```{r, fig.width = 10, fig.height = 3}
 
 CA <- complaints %>% 
   filter(state == "CA")
@@ -65,7 +69,7 @@ CA_companies <- CA %>%
 
 Top_CA_companies <- head(CA_companies,5)
 
-ggplot(Top_CA_companies, aes(x = reorder(company,issue), y = n))+
+Top_co <-ggplot(Top_CA_companies, aes(x = reorder(company,issue), y = n))+
   geom_col(color = "#FD8F6B", fill = "#FD8F6B")+
   theme(axis.text.x.left = element_text(size = .05))+
   coord_flip()+
@@ -75,12 +79,16 @@ ggplot(Top_CA_companies, aes(x = reorder(company,issue), y = n))+
   subtitle = "2020") + 
   theme_minimal()
 
+ggplotly(Top_co)
 
 
 ```
-# Most Common Categories of Complaints 
 
-```{r}
+## 
+
+## Most Common Categories of Complaints
+
+```{r, fig.width = 10, fig.height = 3}
 
 CA_complaints <- CA %>%
   group_by(issue) %>% 
@@ -89,9 +97,9 @@ CA_complaints <- CA %>%
 Top_complaints <- 
   head(CA_complaints,5)
 
-ggplot(Top_complaints, aes(x = reorder(issue,n), y = n))+
+top_is <- ggplot(Top_complaints, aes(x = reorder(issue,n), y = n))+
   geom_col(color = "#46A5E5", fill = "#46A5E5")+
-  theme(axis.text.x.left = element_text(size = 5))+
+  theme(axis.text.x.left = element_text(size = 2))+
   coord_flip()+
   scale_y_continuous(name = "Number of Complaints ", labels = scales::comma) +
   scale_x_discrete(name = "Kinds of Complaints") +
@@ -99,21 +107,38 @@ ggplot(Top_complaints, aes(x = reorder(issue,n), y = n))+
   subtitle = "2020") + 
   theme_minimal()
 
+ggplotly(top_is)
 
 ```
 
-# Mentions of COVID in Consumer Complaints 
+row
+-------------------------------------------------------------------------------
 
-```{r}
+## Analyzing Debt Collection Complaints x Companies
+
+```{r, fig.width = 10, fig.height = 3}
+
+CA_debt <- CA %>% 
+  filter(product == "Debt collection") %>% 
+  group_by(company, issue) %>% 
+  summarise(issue) %>% 
+  count(issue, sort = TRUE)
+
+Top_CA_debt_complaints <-
+  head(CA_debt,10)
+
+Top_db <-ggplot(Top_CA_debt_complaints, aes(x = reorder(company,n), y = n))+
+  geom_col(color = "#F7B7B7", fill = "#F7B7B7")+
+  theme(axis.text.x.left = element_text(size = 5))+
+  coord_flip()+
+  scale_y_continuous(name = "Number of Complaints", labels = scales::comma) +
+  scale_x_discrete(name = "Companies") +
+  labs(title = "Companies x Debt Collection Related Complaints",
+  subtitle = "2020") + 
+  theme_minimal()
 
 
-
-
-
+ggplotly(Top_db)
 
 
 ```
-
-
-
-
