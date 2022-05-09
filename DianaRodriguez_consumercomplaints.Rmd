@@ -17,6 +17,7 @@ library(janitor)
 library(readxl)
 library(writexl)
 library(viridis)
+library(dplyr)
 
 library(tigris)
 library(sf)
@@ -31,22 +32,88 @@ library(DT)
 options(tigris_class = "sf")
 ```
 
-## R Markdown
+```{r}
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+complaints_raw <- read_rds("data/complaints.rds")
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+complaints <- complaints_raw %>% 
+  clean_names()
 
-```{r cars}
-summary(cars)
+head(complaints)
+
 ```
 
-## Including Plots
+```{r}
 
-You can also embed plots, for example:
+complaints %>% 
+  filter(state == "CA") %>% 
+  count(issue,sort = TRUE) %>% 
+  arrange(desc(issue))
 
-```{r pressure, echo=FALSE}
-plot(pressure)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+# Top Company Complaints in California
+
+```{r}
+
+CA <- complaints %>% 
+  filter(state == "CA")
+
+CA_companies <- CA %>%
+  group_by(company, issue) %>% 
+  count(issue, sort = TRUE)
+
+Top_CA_companies <- head(CA_companies,5)
+
+ggplot(Top_CA_companies, aes(x = reorder(company,issue), y = n))+
+  geom_col(color = "#FD8F6B", fill = "#FD8F6B")+
+  theme(axis.text.x.left = element_text(size = .05))+
+  coord_flip()+
+  scale_y_continuous(name = "amount of complaints", labels = scales::comma) +
+  scale_x_discrete(name = "companies") +
+  labs(title = "California Company Complaints",
+  subtitle = "2020") + 
+  theme_minimal()
+
+
+
+```
+# Most Common Categories of Complaints 
+
+```{r}
+
+CA_complaints <- CA %>%
+  group_by(issue) %>% 
+  count(issue, sort = TRUE)
+
+Top_complaints <- 
+  head(CA_complaints,5)
+
+ggplot(Top_complaints, aes(x = reorder(issue,n), y = n))+
+  geom_col(color = "#46A5E5", fill = "#46A5E5")+
+  theme(axis.text.x.left = element_text(size = 5))+
+  coord_flip()+
+  scale_y_continuous(name = "Number of Complaints ", labels = scales::comma) +
+  scale_x_discrete(name = "Kinds of Complaints") +
+  labs(title = "California Common Complaints",
+  subtitle = "2020") + 
+  theme_minimal()
+
+
+```
+
+# Mentions of COVID in Consumer Complaints 
+
+```{r}
+
+
+
+
+
+
+
+```
+
+
+
+
